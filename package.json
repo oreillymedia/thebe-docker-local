@@ -1,0 +1,26 @@
+{
+  "name": "thebe-docker-local",
+  "version": "1.0.0",
+  "description": "local",
+  "main": "gulpfile.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/oreillymedia/thebe-docker-local.git"
+  },
+  "author": "Fred Chasen <fchasen@gmail.com> (http://fchasen.com/)",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/oreillymedia/thebe-docker-local/issues"
+  },
+  "homepage": "https://github.com/oreillymedia/thebe-docker-local",
+  "dependencies": {
+    "gulp-htmlbook": "0.0.3",
+    "gulp-intermediate": "^3.0.1",
+    "gulp-util": "^3.0.6",
+    "htmlbook": "^0.1.4",
+    "through2": "^2.0.0"
+  }
+}

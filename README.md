@@ -19,7 +19,7 @@ docker run -d -p 8888:8888 -p 80:80 zischwartz/thebe-local-docker:ffmpeg
 docker build -t zischwartz/thebe-local-docker  .
 ```
 
-## To Run 
+## To Run
 
 ```bash
 docker run -d -p 8888:8888 -p 80:80 -v $PWD/public:/var/www/html zischwartz/thebe-local-docker
@@ -29,19 +29,27 @@ Assuming you're running boot2docker, now you can visit http://192.168.59.103 in 
 
 *Note:* I've been having trouble with the `-v` docker flag for volumes. Powering off  and on boot2docker seems to work it, but is a terrible solution.
 
-## Build htmlbook
+## Build html from ipynb's in `src`
 
+Install ipymd
 ```bash
-node ~/code/gulp-htmlbook/bin/gulp-htmlbook.js --envPath ~/code/gulp-htmlbook/.env --configPath $PWD/example_content/atlas.json --destination $PWD/public --copyAll
+pip install ipymd
 ```
 
-Next add the thebe assets
-
-```bash
-cp -R thebe_assets/ public/thebe_assets 
-chmod -R a+r public
+Install npm dependencies
+```
+npm install
 ```
 
+Run gulp to compile html and move assets
+```bash
+gulp
+```
+
+If you want to listen for changes to the ipynb files run
+```bash
+gulp watch
+```
 
 ## Run Container Interactively & SSH In For Debugging
 
