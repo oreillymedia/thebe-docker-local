@@ -6,6 +6,7 @@ var intermediate = require('gulp-intermediate');
 var spawn = require('child_process').spawn;
 var markdownToHtmlbook = require('htmlbook');
 var through = require('through2');
+var temp = require('temp').track();
 
 // Map of htmlbook content, used to process xrefs
 var map = [];
@@ -13,7 +14,9 @@ var map = [];
 // Source .ipynb files
 var source = "src/";
 // Output html and asset files
-var destination = "/var/www/html/";
+var destination = "public/";
+
+var tempPath = temp.path() + '/';
 
 // If order is not alphabetical, need to pass a files array
 // Could be hardcoded or loaded from atlas.json
@@ -65,13 +68,13 @@ gulp.task('compile', ['transform'], function() {
 		}))
     // .pipe(htmlbook.layout.chunk()) // Optionally split on sections
     // .pipe(htmlbook.process.ids()) // Add id's to elements that need them
-    .pipe(gulp.dest(destination));
+    .pipe(gulp.dest(tempPath));
 
 });
 
 // Map the content, for use with xrefs, toc, ect...
 gulp.task('map', ['compile'], function() {
-  return gulp.src(destination+"*.html")
+  return gulp.src(tempPath+"*.html")
     // .pipe(order(files))
 		.pipe(htmlbook.generate.map(function(_map){
       map = _map;
@@ -84,7 +87,7 @@ gulp.task('template', ['compile', 'map'], function() {
 	// or order naturally if files not present
 	var _files = (typeof files != 'undefined') ? files : Object.keys(map.titles);
 
-  return gulp.src(destination+"*.html")
+  return gulp.src(tempPath+"*.html")
     .pipe(htmlbook.layout.ordering(_files, map))
     .pipe(htmlbook.layout.template({
       templatePath : "./thebe_assets/layout.html"
@@ -98,7 +101,7 @@ gulp.task('template', ['compile', 'map'], function() {
 gulp.task('xrefs', ['compile','map', 'template'], function() {
   return gulp.src(destination+"*.html")
     .pipe(htmlbook.process.xrefs(map))
-    .pipe(gulp.dest(destination));
+    .pipe(gulp.dest(tempPath));
 });
 
 // Move over images
@@ -114,7 +117,10 @@ gulp.task('assets', function() {
 });
 
 // Run all content tasks
-gulp.task('process', ['compile', 'template', 'map', 'xrefs']);
+gulp.task('process', ['compile', 'template', 'map', 'xrefs'], function() {
+  return gulp.src(tempPath+"*")
+    .pipe(gulp.dest(destination));
+});
 
 // Run all tasks
 gulp.task('default', ['process', 'assets', 'images']);
