@@ -2,7 +2,6 @@ var gulp = require('gulp');
 var util = require('gulp-util');
 
 var htmlbook = require("gulp-htmlbook");
-var run = require('gulp-run');
 var intermediate = require('gulp-intermediate');
 var spawn = require('child_process').spawn;
 var markdownToHtmlbook = require('htmlbook');
@@ -14,7 +13,7 @@ var map = [];
 // Source .ipynb files
 var source = "src/";
 // Output html and asset files
-var destination = "public/";
+var destination = "/var/www/html/";
 
 // If order is not alphabetical, need to pass a files array
 // Could be hardcoded or loaded from atlas.json
@@ -26,12 +25,28 @@ var files = config.files;
 // Convert the ipynb files to md
 // Can't set the output folder in cli
 gulp.task('transform', function(cb) {
+	var err = '';
 	var command = spawn('ipymd', [
 		'--from', 'notebook',
 		'--to', 'atlas',
 		source + '*.ipynb'
 		]);
-	command.on('close', cb);
+
+	// command.stdout.on('data', function(data) {
+  // 	console.log(data);
+  // });
+
+  command.stderr.on('data', function(data) {
+		err += data.toString();
+  });
+
+	command.on('close', function(data) {
+		if (err) {
+			console.error("ipymd error:", err);
+		}
+		cb();
+	});
+
 });
 
 // Compiles HTMLBook from IPython notebook markdown
@@ -105,6 +120,6 @@ gulp.task('process', ['compile', 'template', 'map', 'xrefs']);
 gulp.task('default', ['process', 'assets', 'images']);
 
 // Rerun the task when a file changes, will not move assets
-gulp.task('watch', function() {
-  var watcher = gulp.watch(source+"/**/*", ['process']);
+gulp.task('watch', ['process', 'assets', 'images'], function() {
+  var watcher = gulp.watch(source+"/**/*", {interval: 1000, mode: 'poll'}, ['process']);
 });

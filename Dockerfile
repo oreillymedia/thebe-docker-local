@@ -3,7 +3,7 @@ FROM ipython/scipystack
 MAINTAINER IPython Project <ipython-dev@scipy.org>
 
 # VOLUME /notebooks
-WORKDIR /notebooks
+# WORKDIR /notebooks
 
 EXPOSE 8888 80
 
@@ -22,9 +22,28 @@ RUN pip install --upgrade pip
 COPY requirements.txt requirements.txt
 RUN pip2.7 install -r requirements.txt
 
+RUN pip install ipymd
+
 RUN unset PASSWORD
 
 RUN mkdir images
+
+# gulp
+RUN apt-get -y install nodejs
+
+# use changes to package.json to force Docker not to use the cache
+# when we change our application's nodejs dependencies:
+ADD package.json /tmp/package.json
+RUN cd /tmp && npm install
+RUN mkdir -p /opt/app && cp -a /tmp/node_modules /opt/app/
+
+RUN npm install gulp -g
+
+WORKDIR /opt/app
+COPY gulpfile.js gulpfile.js
+COPY src src
+COPY thebe_assets thebe_assets
+# ADD images images
 
 # Install nginx.
 RUN \
@@ -33,7 +52,6 @@ RUN \
   apt-get install -y nginx && \
   rm -rf /var/lib/apt/lists/* && \
   chown -R www-data:www-data /var/lib/nginx
-
 
 ADD public /var/www/html
 

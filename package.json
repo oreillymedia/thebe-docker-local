@@ -17,6 +17,7 @@
   },
   "homepage": "https://github.com/oreillymedia/thebe-docker-local",
   "dependencies": {
+    "gulp": "^3.9.0",
     "gulp-htmlbook": "0.0.3",
     "gulp-intermediate": "^3.0.1",
     "gulp-util": "^3.0.6",
