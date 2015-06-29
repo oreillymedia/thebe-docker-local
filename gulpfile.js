@@ -14,7 +14,7 @@ var map = [];
 // Source .ipynb files
 var source = "src/";
 // Output html and asset files
-var destination = "public/";
+var destination = "/var/www/html/";
 
 var tempPath = temp.path() + '/';
 
