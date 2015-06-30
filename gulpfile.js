@@ -4,7 +4,7 @@ var util = require('gulp-util');
 var htmlbook = require("gulp-htmlbook");
 var intermediate = require('gulp-intermediate');
 var spawn = require('child_process').spawn;
-var markdownToHtmlbook = require('htmlbook');
+// var markdownToHtmlbook = require('htmlbook');
 var through = require('through2');
 var temp = require('temp').track();
 
@@ -12,9 +12,10 @@ var temp = require('temp').track();
 var map = [];
 
 // Source .ipynb files
-var source = "src/";
+var source = "/notebooks/";
 // Output html and asset files
 var destination = "/var/www/html/";
+// var destination = "compiled/";
 
 var tempPath = temp.path() + '/';
 
@@ -56,16 +57,17 @@ gulp.task('transform', function(cb) {
 // Requires that ipymd is installed: https://github.com/rossant/ipymd/
 // pip install ipymd
 gulp.task('compile', ['transform'], function() {
-  return gulp.src(source+'*.md')
+  return gulp.src(source+'**/*.md')
 		// Transform the md to htmlbook
-		.pipe(through.obj(function(file, enc, cb){
-			var contents = file.contents.toString();
-			var result = markdownToHtmlbook(contents).parse();
-
-			file.contents = new Buffer(result, "utf-8");
-			file.path = util.replaceExtension(file.path, '.html');
-			cb(null, file);
-		}))
+		// .pipe(through.obj(function(file, enc, cb){
+		// 	var contents = file.contents.toString();
+		// 	var result = markdownToHtmlbook(contents).parse();
+		//
+		// 	file.contents = new Buffer(result, "utf-8");
+		// 	file.path = util.replaceExtension(file.path, '.html');
+		// 	cb(null, file);
+		// }))
+		.pipe(htmlbook.tools.markdown())
     // .pipe(htmlbook.layout.chunk()) // Optionally split on sections
     // .pipe(htmlbook.process.ids()) // Add id's to elements that need them
     .pipe(gulp.dest(tempPath));
@@ -82,7 +84,7 @@ gulp.task('map', ['compile'], function() {
 });
 
 // Template the content using liquid, wrap in html
-gulp.task('template', ['compile', 'map'], function() {
+gulp.task('template', ['compile', 'map', 'xrefs'], function() {
 	// Order by files array
 	// or order naturally if files not present
 	var _files = (typeof files != 'undefined') ? files : Object.keys(map.titles);
@@ -92,14 +94,14 @@ gulp.task('template', ['compile', 'map'], function() {
     .pipe(htmlbook.layout.template({
       templatePath : "./thebe_assets/layout.html"
     }))
-    .pipe(gulp.dest(destination));
+    .pipe(gulp.dest(tempPath));
 
 });
 
 // Process Cross References in content
 // replaces links and link text
-gulp.task('xrefs', ['compile','map', 'template'], function() {
-  return gulp.src(destination+"*.html")
+gulp.task('xrefs', ['compile', 'map'], function() {
+  return gulp.src(tempPath+"*.html")
     .pipe(htmlbook.process.xrefs(map))
     .pipe(gulp.dest(tempPath));
 });
@@ -118,7 +120,7 @@ gulp.task('assets', function() {
 
 // Run all content tasks
 gulp.task('process', ['compile', 'template', 'map', 'xrefs'], function() {
-  return gulp.src(tempPath+"*")
+  return gulp.src(tempPath+"*.html")
     .pipe(gulp.dest(destination));
 });
 
@@ -127,5 +129,5 @@ gulp.task('default', ['process', 'assets', 'images']);
 
 // Rerun the task when a file changes, will not move assets
 gulp.task('watch', ['process', 'assets', 'images'], function() {
-  var watcher = gulp.watch(source+"/**/*", {interval: 1000, mode: 'poll'}, ['process']);
+  var watcher = gulp.watch(source+"/**/*", ['process']);
 });

@@ -2,7 +2,8 @@ FROM ipython/scipystack
 
 MAINTAINER IPython Project <ipython-dev@scipy.org>
 
-# VOLUME /notebooks
+VOLUME /notebooks
+VOLUME /var/www/html
 # WORKDIR /notebooks
 
 EXPOSE 8888 80
@@ -41,9 +42,13 @@ RUN npm install gulp -g
 
 WORKDIR /opt/app
 COPY gulpfile.js gulpfile.js
-COPY src src
+# COPY src src
 COPY thebe_assets thebe_assets
 # ADD images images
+
+# Kramdown
+RUN apt-get install ruby -y
+RUN gem install kramdown
 
 # Install nginx.
 RUN \
