@@ -108,7 +108,7 @@ gulp.task('xrefs', ['compile', 'map'], function() {
 
 // Move over images
 gulp.task('images', function() {
-  return gulp.src(['images/**'])
+  return gulp.src(['images/**', source+'images/**'])
     .pipe(gulp.dest(destination+'images'))
 });
 
